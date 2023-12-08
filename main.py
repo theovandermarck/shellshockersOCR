@@ -71,8 +71,7 @@ def display_window(image, text_data):
         x, y, x2, y2 = int(words[1]), int(words[2]), int(words[3]), int(words[4])
         label = words[0]
 
-        y = int(h) - (y)
-        y2 = int(h - (y2))
+        
         if platform == "darwin":
             y = int(h - y + h)
             y2 = int(h - y2 - h)
