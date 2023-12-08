@@ -1,12 +1,16 @@
+# Set line 10 to the path of your Tesseract executable
+# After doing so, run the program and press any key while the screenshot window is focused to advance to the next screenshot
+# pressing 'Q' will quit the program
+
+
 import cv2
 import numpy as np
 import pyautogui
 from PIL import Image
 import pytesseract
 import os
-# import time
 
-# Set the path to the Tesseract executable
+# CHANGE ME - Set the path to the Tesseract executable
 pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
 
 cur_path = os.path.dirname(__file__)
@@ -54,7 +58,8 @@ def preprocess(image_path):
 
 def run_ocr(image):
     text_data = pytesseract.image_to_boxes(image)
-
+    return text_data
+def display_window(image, text_data):
     # Convert the image to BGR format for OpenCV
     image_cv2 = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
 
@@ -74,7 +79,6 @@ def run_ocr(image):
     cv2.imshow('Text Detection', image_cv2)
     # input("ENTER")
     # time.sleep(5)
-    return text_data
 
 w, h = pyautogui.size()
 lb, tb, rb, bb = 400, 140, 500, 300
@@ -83,7 +87,7 @@ if get_true_false("Do you want to edit the postprocessing settings?"):
     thresholding = get_true_false("Do you want to apply thresholding to the images?")
     gaussian_blur = get_true_false("Do you want to apply Gaussian blur to the images?")
     contrast = get_true_false("Do you want to apply contrast tools to the images?")
-
+displayWindow = get_true_false("Do you want to display a visualization with bounding boxes and labels?")
 i = 0
 
 while True:
@@ -95,13 +99,17 @@ while True:
 
     # Perform image preprocessing and OCR
     image = preprocess(dst_path)
-    run_ocr(image)
+    text_data = run_ocr(image)
+    if displayWindow:
+        display_window(image, text_data)
     # Wait for any keypress (0 delay)
-    key = cv2.waitKey(0)
+        key = cv2.waitKey(0)
 
     # Break the loop if 'q' key is pressed
-    if key == ord('q'):
-        break
+        if key == ord('q'):
+            break
+    else:
+        input("Press return to continue")
 
     # Optional: Remove the screenshot file after analysis if not needed
     os.remove(dst_path)
