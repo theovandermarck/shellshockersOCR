@@ -4,7 +4,7 @@ import pyautogui
 from PIL import Image
 import pytesseract
 import os
-import time
+# import time
 
 # Set the path to the Tesseract executable
 pytesseract.pytesseract.tesseract_cmd = r'/usr/local/bin/tesseract'
