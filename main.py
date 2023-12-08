@@ -1,5 +1,5 @@
-# Set line 15 to the path of your Tesseract executable (https://tesseract-ocr.github.io/tessdoc/Installation.html)
-# After doing so, run the program and press any key while the screenshot window is focused to advance to the next screenshot
+# Set line 21, 26, or 31 (changes depending on OS) to the path of your Tesseract executable (https://tesseract-ocr.github.io/tessdoc/Installation.html)
+# After doing so, run the program and press any key while the screenshot window is focused to advance to the next screenshot OR alternatively if not using the visualization window, press return in the terminal to advance to the next run.
 # pressing 'Q' will quit the program
 
 
@@ -14,7 +14,21 @@ import time
 
 platform = sys.platform
 # CHANGE ME - Set the path to the Tesseract executable
-pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
+if platform == 'win32':
+    #Change this to make the boxes on the visualization appear further up/down
+    third_scale_factor = 1.35
+    #Change this to reflect your tesseract path for windows (this is the path that our tesseract was installed on)
+    pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
+elif platform == 'darwin':
+    #Change this to make the boxes on the visualization appear further up/down
+    third_scale_factor = 1.29
+    #Change this to reflect your tesseract path for mac (this was the default path from out homebrew installation)
+    pytesseract.pytesseract.tesseract_cmd = r'/usr/local/bin/tesseract'
+else:
+    #Change this to make the boxes on the visualization appear further up/down
+    third_scale_factor = 1.35
+    #Change this to reflect your tesseract path for any other platform
+    pytesseract.pytesseract.tesseract_cmd = r'INSERT YOUR TESSERACT PATH HERE'
 
 cur_path = os.path.dirname(__file__)
 
@@ -49,8 +63,8 @@ def preprocess(image_path):
     image = cv2.bitwise_not(image)
     # Apply thresholding
     image = cv2.resize(image, None, fx=1.5, fy=1.5, interpolation=cv2.INTER_CUBIC)
-    if thresholding:
-        _, image = cv2.threshold(image, 128, 255, cv2.THRESH_BINARY)
+    # if thresholding:
+    #     _, image = cv2.threshold(image, 128, 255, cv2.THRESH_BINARY)
 
     if gaussian_blur:
 # Noise reduction using GaussianBlur
@@ -85,8 +99,8 @@ def display_window(image, text_data):
         label = words[0]
         
 
-        y = int((h*1.35 - y*new_scale_factor - tb*new_scale_factor - bb*new_scale_factor))
-        y2 = int((h*1.35 - y2*new_scale_factor - tb*new_scale_factor - bb*new_scale_factor))
+        y = int((h*1.29 - y*new_scale_factor - tb*new_scale_factor - bb*new_scale_factor))
+        y2 = int((h*1.29 - y2*new_scale_factor - tb*new_scale_factor - bb*new_scale_factor))
 
         cv2.rectangle(image_cv2, (x, y), (x2, y2), (0, 255, 0), 2)
         cv2.putText(image_cv2, label, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
