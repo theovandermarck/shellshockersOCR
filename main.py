@@ -1,4 +1,4 @@
-# Set line 10 to the path of your Tesseract executable
+# Set line 10 to the path of your Tesseract executable (https://tesseract-ocr.github.io/tessdoc/Installation.html)
 # After doing so, run the program and press any key while the screenshot window is focused to advance to the next screenshot
 # pressing 'Q' will quit the program
 
@@ -9,7 +9,9 @@ import pyautogui
 from PIL import Image
 import pytesseract
 import os
+import sys
 
+platform = sys.platform
 # CHANGE ME - Set the path to the Tesseract executable
 pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
 
@@ -69,16 +71,19 @@ def display_window(image, text_data):
         x, y, x2, y2 = int(words[1]), int(words[2]), int(words[3]), int(words[4])
         label = words[0]
 
-        y = int(h) - (y)  # Adjust y-coordinate
-        y2 = int(h - (y2))  # Adjust y-coordinate
-
+        y = int(h) - (y)
+        y2 = int(h - (y2))
+        if platform == "darwin":
+            y = int(h - y + h)
+            y2 = int(h - y2 - h)
+        else:
+            y = int(h - y)
+            y2 = int(h - y2)
         cv2.rectangle(image_cv2, (x, y), (x2, y2), (0, 255, 0), 2)
         cv2.putText(image_cv2, label, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-    # Display the image with bounding boxes and labels
+    
     cv2.imshow('Text Detection', image_cv2)
-    # input("ENTER")
-    # time.sleep(5)
 
 w, h = pyautogui.size()
 lb, tb, rb, bb = 400, 140, 500, 300
