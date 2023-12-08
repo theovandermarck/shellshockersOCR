@@ -119,7 +119,12 @@ def run_in_window(t,goal):
         image = preprocess(dst_path)
         text_data, full_data = run_ocr(image)
         print(full_data)
-        print(analyze_ocr(text_data=full_data,goal=goal))
+        full_data = analyze_ocr(text_data=full_data,goal=goal)
+        print(full_data)
+        best_data = find_most_confident(full_data)
+        print(best_data)
+        if best_data != []:
+            move_mouse_to_array(best_data)
         if displayWindow:
             display_window(image, text_data)
         # Wait for any keypress (0 delay)
@@ -146,6 +151,28 @@ def analyze_ocr(text_data, goal):
         except:
             pass
     return a
+def find_most_confident(text_array):
+    highestNum = 0
+    highestArray = []
+    print(text_array)
+    for i in text_array:
+        print(i[4])
+        if float(i[4]) > float(highestNum):
+            highestNum = i[4]
+            highestArray = i
+    return highestArray
+
+def move_mouse_to_array(best_data):
+    print("startingpos",pyautogui.position())
+    # print(best_data)  
+    pyautogui.moveTo(w/2, h/2)
+    # print(w/2, best_data[0], nt(best_data[0]))
+    # print(best_data)
+    xPosRel = int(int(best_data[0])+(int(best_data[2])/2))+lb
+    yPosRel = (int(best_data[1])+int(best_data[3])/2+tb)
+    print(xPosRel,yPosRel)
+    time.sleep(1)
+    pyautogui.moveTo(xPosRel, yPosRel)
 
 w, h = pyautogui.size()
 lb, tb, rb, bb = 400, 140, 500, 300
@@ -158,4 +185,3 @@ displayWindow = get_true_false("Do you want to display a visualization with boun
 goal = input("What string are you looking for? ")
 
 run_in_window(t=0, goal=goal)
-
