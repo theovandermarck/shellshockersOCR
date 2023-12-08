@@ -7,35 +7,56 @@ import os
 # import time
 
 # Set the path to the Tesseract executable
-pytesseract.pytesseract.tesseract_cmd = r'/usr/local/bin/tesseract'
+pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
 
 cur_path = os.path.dirname(__file__)
 
+w, h = pyautogui.size()
+lb, tb, rb, bb = 400, 140, 500, 300
+kernel_size = 1
+
+thresholding = False
+gaussian_blur = True
+contrast = False
+
+def get_true_false(prompt):
+    while True:
+        i = input(f"{prompt} Please respond with 'y', 'yes', 'n', or 'no' (not case-sensitive): ")
+        if i.lower() in ['y', 'yes']:
+            return True
+        elif i.lower() in ['n', 'no']:
+            return False
+        else:
+            print("Invalid input. Please try again.")
+
+
 # Function for image preprocessing and OCR
-def preprocess_and_ocr(image_path, lb, tb, w, h):
+def preprocess(image_path):
     # Open the image
     image = Image.open(image_path)
 
     # Convert the image to grayscale
-    gray_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
+    image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
 
     # Apply thresholding
-    _, threshold_image = cv2.threshold(gray_image, 128, 255, cv2.THRESH_BINARY)
+    if thresholding:
+        _, image = cv2.threshold(image, 128, 255, cv2.THRESH_BINARY)
 
-    # Noise reduction using GaussianBlur
-    blurred_image = cv2.GaussianBlur(threshold_image, (5, 5), 0)
+    if gaussian_blur:
+# Noise reduction using GaussianBlur
+        image = cv2.GaussianBlur(image, (kernel_size, kernel_size), 0)
 
-    # Adjust contrast
-    contrast_image = cv2.equalizeHist(blurred_image)
-    final_image = contrast_image
-    # Save the preprocessed image (optional)
-    cv2.imwrite('preprocessed_image.png', final_image)
+# Adjust contrast
+    if contrast:
+        image = cv2.equalizeHist(image)
+    cv2.imwrite('preprocessed_image.png', image)
+    return image
 
-    # Use Tesseract for text detection on the preprocessed image
-    text_data = pytesseract.image_to_boxes(final_image)
+def run_ocr(image):
+    text_data = pytesseract.image_to_boxes(image)
 
     # Convert the image to BGR format for OpenCV
-    image_cv2 = cv2.cvtColor(final_image, cv2.COLOR_GRAY2BGR)
+    image_cv2 = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
 
     # Draw bounding boxes and labels on the image
     for line in text_data.splitlines():
@@ -43,12 +64,8 @@ def preprocess_and_ocr(image_path, lb, tb, w, h):
         x, y, x2, y2 = int(words[1]), int(words[2]), int(words[3]), int(words[4])
         label = words[0]
 
-        # Adjust coordinates based on the region of interest
-        # x += int(w * lb / 2560)
-        y = int(h) - (y)+h  # Adjust y-coordinate
-
-        # x2 += int(w * lb / 2560)
-        y2 = int(h - (y2)+h)  # Adjust y-coordinate
+        y = int(h) - (y)  # Adjust y-coordinate
+        y2 = int(h - (y2))  # Adjust y-coordinate
 
         cv2.rectangle(image_cv2, (x, y), (x2, y2), (0, 255, 0), 2)
         cv2.putText(image_cv2, label, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
@@ -59,11 +76,16 @@ def preprocess_and_ocr(image_path, lb, tb, w, h):
     # time.sleep(5)
     return text_data
 
-# Region of interest (ROI) coordinates
 w, h = pyautogui.size()
 lb, tb, rb, bb = 400, 140, 500, 300
 
+if get_true_false("Do you want to edit the postprocessing settings?"):
+    thresholding = get_true_false("Do you want to apply thresholding to the images?")
+    gaussian_blur = get_true_false("Do you want to apply Gaussian blur to the images?")
+    contrast = get_true_false("Do you want to apply contrast tools to the images?")
+
 i = 0
+
 while True:
     i += 1
     screenshot_path = f"screenshot_{i}.png"
@@ -72,8 +94,8 @@ while True:
     img.save(dst_path)
 
     # Perform image preprocessing and OCR
-    print("; ", preprocess_and_ocr(dst_path, lb, tb, w, h))
-
+    image = preprocess(dst_path)
+    run_ocr(image)
     # Wait for any keypress (0 delay)
     key = cv2.waitKey(0)
 
