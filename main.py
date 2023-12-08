@@ -1,4 +1,4 @@
-# Set line 10 to the path of your Tesseract executable (https://tesseract-ocr.github.io/tessdoc/Installation.html)
+# Set line 15 to the path of your Tesseract executable (https://tesseract-ocr.github.io/tessdoc/Installation.html)
 # After doing so, run the program and press any key while the screenshot window is focused to advance to the next screenshot
 # pressing 'Q' will quit the program
 
