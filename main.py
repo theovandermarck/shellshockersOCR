@@ -10,6 +10,7 @@ from PIL import Image
 import pytesseract
 import os
 import sys
+import time
 
 platform = sys.platform
 # CHANGE ME - Set the path to the Tesseract executable
@@ -23,7 +24,8 @@ kernel_size = 1
 
 thresholding = False
 gaussian_blur = True
-contrast = False
+contrast = True
+displayWindow = True
 
 def get_true_false(prompt):
     while True:
@@ -43,15 +45,22 @@ def preprocess(image_path):
 
     # Convert the image to grayscale
     image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
-
+    # image = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+    image = cv2.bitwise_not(image)
     # Apply thresholding
+    image = cv2.resize(image, None, fx=1.5, fy=1.5, interpolation=cv2.INTER_CUBIC)
     if thresholding:
         _, image = cv2.threshold(image, 128, 255, cv2.THRESH_BINARY)
 
     if gaussian_blur:
 # Noise reduction using GaussianBlur
         image = cv2.GaussianBlur(image, (kernel_size, kernel_size), 0)
+    # Dilation to connect nearby text pixels
+    image = cv2.dilate(image, np.ones((kernel_size, kernel_size), np.uint8), iterations=1)
 
+# Erosion to reduce noise and separate connected components
+    image = cv2.erode(image, np.ones((kernel_size, kernel_size), np.uint8), iterations=1)
+    
 # Adjust contrast
     if contrast:
         image = cv2.equalizeHist(image)
@@ -60,7 +69,8 @@ def preprocess(image_path):
 
 def run_ocr(image):
     text_data = pytesseract.image_to_boxes(image)
-    return text_data
+    full_data = pytesseract.image_to_data(image)
+    return text_data, full_data
 def display_window(image, text_data):
     # Convert the image to BGR format for OpenCV
     image_cv2 = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
@@ -68,21 +78,60 @@ def display_window(image, text_data):
     # Draw bounding boxes and labels on the image
     for line in text_data.splitlines():
         words = line.split()
-        x, y, x2, y2 = int(words[1]), int(words[2]), int(words[3]), int(words[4])
+        scale_factor = 1
+        new_scale_factor = 1
+        # print(words[6])
+        x, y, x2, y2 = int(int(words[1]) / scale_factor), int(int(words[2]) / scale_factor), int(int(words[3]) / scale_factor), int(int(words[4]) / scale_factor)
         label = words[0]
-
         
-        if platform == "darwin":
-            y = int(h - y + h)
-            y2 = int(h - y2 - h)
-        else:
-            y = int(h - y)
-            y2 = int(h - y2)
+
+        y = int((h*1.35 - y*new_scale_factor - tb*new_scale_factor - bb*new_scale_factor))
+        y2 = int((h*1.35 - y2*new_scale_factor - tb*new_scale_factor - bb*new_scale_factor))
+
         cv2.rectangle(image_cv2, (x, y), (x2, y2), (0, 255, 0), 2)
         cv2.putText(image_cv2, label, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+    rescaled_image = cv2.resize(image_cv2, (w-rb-lb, h-bb-tb))
+    cv2.imshow('Text Detection', rescaled_image)
+def run_in_window(t,goal):
+    i = 0
+    while True:
+        i += 1
+        screenshot_path = f"screenshot_{i}.png"
+        dst_path = os.path.join(cur_path, screenshot_path)
+        img = pyautogui.screenshot(region=(lb, tb, w-rb-lb, h-bb-tb))
+        img.save(dst_path)
 
-    
-    cv2.imshow('Text Detection', image_cv2)
+        # Perform image preprocessing and OCR
+        image = preprocess(dst_path)
+        text_data, full_data = run_ocr(image)
+        print(full_data)
+        print(analyze_ocr(text_data=full_data,goal=goal))
+        if displayWindow:
+            display_window(image, text_data)
+        # Wait for any keypress (0 delay)
+            key = cv2.waitKey(t)
+        # Break the loop if 'q' key is pressed
+            if key == ord('q'):
+                os.remove(dst_path)
+                return
+        else:
+            input("Press return to continue")
+        
+        time.sleep(1)
+        # Optional: Remove the screenshot file after analysis if not needed
+        os.remove(dst_path)
+def analyze_ocr(text_data, goal):
+    a = []
+    for line in text_data.splitlines():
+        words = line.split()
+        if words[6] == 'left':
+            continue
+        try:
+            if goal in words[11].lower():
+                a.append(words[6:12])
+        except:
+            pass
+    return a
 
 w, h = pyautogui.size()
 lb, tb, rb, bb = 400, 140, 500, 300
@@ -92,28 +141,7 @@ if get_true_false("Do you want to edit the postprocessing settings?"):
     gaussian_blur = get_true_false("Do you want to apply Gaussian blur to the images?")
     contrast = get_true_false("Do you want to apply contrast tools to the images?")
 displayWindow = get_true_false("Do you want to display a visualization with bounding boxes and labels?")
-i = 0
+goal = input("What string are you looking for? ")
 
-while True:
-    i += 1
-    screenshot_path = f"screenshot_{i}.png"
-    dst_path = os.path.join(cur_path, screenshot_path)
-    img = pyautogui.screenshot()
-    img.save(dst_path)
+run_in_window(t=0, goal=goal)
 
-    # Perform image preprocessing and OCR
-    image = preprocess(dst_path)
-    text_data = run_ocr(image)
-    if displayWindow:
-        display_window(image, text_data)
-    # Wait for any keypress (0 delay)
-        key = cv2.waitKey(0)
-
-    # Break the loop if 'q' key is pressed
-        if key == ord('q'):
-            break
-    else:
-        input("Press return to continue")
-
-    # Optional: Remove the screenshot file after analysis if not needed
-    os.remove(dst_path)
