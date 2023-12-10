@@ -168,7 +168,7 @@ def run_main(t,goals):
         else:
             # If not displaying the visualization window, print the current image processing settings (this is for debugging)
             print(resizing, resize_scale_factor, gaussian_blur, dilation, erosion, contrast, kernel_size)
-
+#
 # Define function to analyze the OCR word box data and find any words that match the goal string(s)
 def analyze_ocr(text_data, goals, any):
     # Initialize the list a to store words that match (any of) the goal string(s)
