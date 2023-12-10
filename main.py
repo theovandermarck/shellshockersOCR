@@ -1,6 +1,8 @@
-# Set line 21, 26, or 31 (changes depending on OS) to the path of your Tesseract executable (https://tesseract-ocr.github.io/tessdoc/Installation.html)
+# Set line 25, 30, or 35 (changes depending on OS) to the path of your Tesseract executable (https://tesseract-ocr.github.io/tessdoc/Installation.html)
 # After doing so, run the program and press any key while the screenshot window is focused to advance to the next screenshot OR alternatively if not using the visualization window, press return in the terminal to advance to the next run.
 # pressing 'Q' will quit the program
+
+# Citations: pytesseract (the OCR library used) https://pypi.org/project/pytesseract/, which is a wrapper for Tesseract (the OCR engine used) https://tesseract-ocr.github.io/tessdoc/Installation.html; pyautogui (the library used to take screenshots and move the mouse) https://pyautogui.readthedocs.io/en/latest/; OpenCV (the library used to alter and process the images) https://docs.opencv.org/4.x/d2/d96/tutorial_py_table_of_contents_imgproc.html; PIL (the library used to convert the screenshots to images) https://pillow.readthedocs.io/en/stable/; Numpy (used to assist in image processing) https://numpy.org/doc/stable/
 
 # import libraries
 import cv2
@@ -13,7 +15,7 @@ import sys
 import time
 import random
 
-# Get the platform the program is running on
+# Get the platform the program is running on; Citation: https://www.devdungeon.com/content/get-operating-system-info-python
 platform = sys.platform
 # CHANGE ME - Set the path to the Tesseract executable
 if platform == 'win32':
@@ -35,7 +37,7 @@ else:
 # Get current path
 cur_path = os.path.dirname(__file__)
 
-# Get screen width, height
+# Get screen width, height; Citation: this is from the pyautogui documentation, which I referenced earlier. For all following instances of code from the documentation of pyautodui (which is already listed at the top), they will not be cited.
 w, h = pyautogui.size()
 # Set buffers around each screenshot measured in pixels (lb: distance from left, tb: distance from top, rb: distance from right, bb: distance from bottom)
 lb, tb, rb, bb = 400, 140, 500, 300
@@ -59,23 +61,23 @@ def get_true_false(prompt):
         else:
             print("Invalid input. Please try again.")
 
-# Define function to process images
+# Define function to process images; Citation: this is from the PIL documentation, which I referenced earlier. For all following instances of code from the documentation of PIL (which is already listed at the top), they will not be cited.
 def preprocess(image_path):
     image = Image.open(image_path)
 
-    # Convert image to greyscale and bitwise
+    # Convert image to greyscale and bitwise; Citation: this is from the cv2 documentation, which I referenced earlier. For all following instances of code from the documentation of cv2 (which is already listed at the top), they will not be cited.
     image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
     image = cv2.bitwise_not(image)
     # If using image resizing, apply it
     if resizing:
         image = cv2.resize(image, None, fx=resize_scale_factor, fy=resize_scale_factor, interpolation=cv2.INTER_CUBIC)
-    # If using adapptive thresholding, apply it
+    # If using adaptive thresholding, apply it
     if thresholding:
         image = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
     # If using gaussian blur, apply it
     if gaussian_blur:
         image = cv2.GaussianBlur(image, (kernel_size, kernel_size), 0)
-    # If using dilation, apply it
+    # If using dilation, apply it; Citation: part of this is from the Numpy documentation, which I referenced earlier. For all following instances of code from the documentation of Numpy (which is already listed at the top), they will not be cited.
     if dilation:
         image = cv2.dilate(image, np.ones((kernel_size, kernel_size), np.uint8), iterations=1)
     # If using erosion, apply it
@@ -90,7 +92,7 @@ def preprocess(image_path):
 
 # Define function to run the Tesseract OCR on the image
 def run_ocr(image):
-    # Obtain data of the individual characters in the image (not currently used besides visualization which is disabled by default)
+    # Obtain data of the individual characters in the image (not currently used besides visualization which is disabled by default); Citation: this is from the pytesseract documentation, which I referenced earlier. For all following instances of code from the documentation of pytesseract (which is alreadu listed at the top), they will not be cited.
     text_data = pytesseract.image_to_boxes(image)
     # Obtain data of the boxes of words in the image, including location, box size, confidence, etc.
     full_data = pytesseract.image_to_data(image)
@@ -221,9 +223,9 @@ def move_mouse_to_array(best_data):
         # If in demo mode, move the mouse to the center of the screen (the mouse is permanently in the center of the screen but we need to replicate this when we're demoing the program in a 2d space)
         pyautogui.moveTo(w/2, h/2)
         ctb = int(best_data[3])/resize_scale_factor/2
-    # Set the destination for the mouse to move on the X axis. This is derived from the position in the screenshot divided by the resizing factor of the image, and the screenshot buffer (defined line 41) and clb (defined line 217) are both added to this value.
+    # Set the destination for the mouse to move on the X axis. This is derived from the position in the screenshot divided by the resizing factor of the image, and the screenshot buffer (defined line 46) and clb (defined line 220) are both added to this value.
     xPos = int(best_data[0])/resize_scale_factor+lb+clb
-    # Set the destination for the mouse to move on the Y axis. This is derived from the position in the screenshot divided by the resizing factor of the image, and the screenshot buffer (defined line 41) and ctb (defined line 217) are both added to this value.
+    # Set the destination for the mouse to move on the Y axis. This is derived from the position in the screenshot divided by the resizing factor of the image, and the screenshot buffer (defined line 46) and ctb (defined line 221 or line 225) are both added to this value.
     yPos = int(best_data[1])/resize_scale_factor+tb+ctb
     print(xPos,yPos)
     # Define the distance for the mouse to be moved on the x/y from the center of the screen. This is derived from the goal position, from which the width/height are subtracted. Finally, the two values are multiplied by sensMultiplier (the sensitivity variable, which determines what percentage of the distance the mouse actually travels to better line up with how those movements translate in-game)
@@ -240,7 +242,7 @@ def move_mouse_to_array(best_data):
         pyautogui.keyUp('shift')
         pyautogui.press('r')
 
-# Define function to randomize image processing variables. This was used to attempt to optimize the text recognition of the model and find the best variables. The program returns an output that can be directly pasted into line 44 to set the default variables to those
+# Define function to randomize image processing variables. This was used to attempt to optimize the text recognition of the model and find the best variables. The program returns an output that can be directly pasted into line 46 to set the default variables to those; Citation: https://stackoverflow.com/questions/6824681/get-a-random-boolean-in-python
 def randomizeVals():
     resizing = bool(random.getrandbits(1))
     resize_scale_factor=random.uniform(0.75,3)
@@ -291,6 +293,8 @@ while True:
 
 # Run main, (t here references the window behavior if the variable displayWindow is set to true. It currently displays text boxes in the wrong places if the scale factor is anything besides 1 (and maybe even if it is 1), and since it being on is an active detriment to the program's intended goal we haven't put effort into fixing that.) If displayWindow were true t equaling 0 would mean that the program continues on any keypress, and it equaling anything else would mean that the program would wait that many milliseconds before continuing.
 run_main(t=0, goals=goals)
+
+
 
 
 # OBSOLETE CODE BELOW HERE
