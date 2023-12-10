@@ -240,7 +240,7 @@ def move_mouse_to_array(best_data):
         pyautogui.keyUp('shift')
         pyautogui.press('r')
 
-# Define function to randomize image processing variables. This was used to attempt to optimize the text recognition of the model and find the best variables. The program returns an output that can be directly pasted into line 44 to set the default variables to those.
+# Define function to randomize image processing variables. This was used to attempt to optimize the text recognition of the model and find the best variables. The program returns an output that can be directly pasted into line 44 to set the default variables to those
 def randomizeVals():
     resizing = bool(random.getrandbits(1))
     resize_scale_factor=random.uniform(0.75,3)
