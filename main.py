@@ -135,6 +135,7 @@ def run_main(t,goals):
         any = True
     # Iterate until program ends
     while True:
+        startTime = time.time()
         # Take a screenshot and save it
         screenshot_path = f"screenshot.png"
         dst_path = os.path.join(cur_path, screenshot_path)
@@ -170,6 +171,8 @@ def run_main(t,goals):
         else:
             # If not displaying the visualization window, print the current image processing settings (this is for debugging)
             print(resizing, resize_scale_factor, gaussian_blur, dilation, erosion, contrast, kernel_size)
+        executionTime = (time.time() - startTime)
+        print('Time to run (seconds): ' + str(executionTime))
 
 # Define function to analyze the OCR word box data and find any words that match the goal string(s)
 def analyze_ocr(text_data, goals, any):
