@@ -141,25 +141,36 @@ def run_main(t,goals):
         dst_path = os.path.join(cur_path, screenshot_path)
         img = pyautogui.screenshot(region=(lb, tb, w-rb-lb, h-bb-tb))
         img.save(dst_path)
+        screenshotTime = time.time() - startTime
 
         # Perform image processing
+        preProcessTime = time.time()
         image = preprocess(image_path=dst_path)
+        preProcessTime = time.time() - preProcessTime
 
         # Perform OCR on the image and print the word box data
+        OCRTime = time.time()
         text_data, full_data = run_ocr(image)
         print(full_data)
+        OCRTime = time.time() - OCRTime
 
         # Analyze the OCR word box data and find any words that match the goal string(s), then print it
+        analysisTime = time.time()
         full_data = analyze_ocr(text_data=full_data,goals=goals,any=any)
         print(full_data)
+        analysisTime = time.time() - analysisTime
 
         # Out of the word boxes that match the goal string(s), find the one with the highest confidence and print it
+        mostConfidentTime = time.time()
         best_data = find_most_confident(full_data)
         print(best_data)
+        mostConfidentTime = time.time() - mostConfidentTime
 
         # If there is a word box matching the goal string(s), move the mouse to it
         if best_data != []:
+            moveMouseTime = time.time()
             move_mouse_to_array(best_data)
+            moveMouseTime = time.time() - moveMouseTime
 
         # If the visualization window is enabled, display it. Then wait for either a keypress or amount of time to continue (if t=0 wait for a keypress, if t>0 wait for that many milliseconds). If the keypress = q, end the program (fun fact! this is the only way to end the program, and it's locked behind a variable that is hardcoded as false!)
         if displayWindow:
@@ -172,7 +183,13 @@ def run_main(t,goals):
             # If not displaying the visualization window, print the current image processing settings (this is for debugging)
             print(resizing, resize_scale_factor, gaussian_blur, dilation, erosion, contrast, kernel_size)
         executionTime = (time.time() - startTime)
-        print('Time to run (seconds): ' + str(executionTime))
+        print(f'Time to run (seconds): {executionTime}')
+        print(f'Time to take and save screenshot (seconds): {screenshotTime}')
+        print(f'Time to process image (seconds): {preProcessTime}')
+        print(f'Time to run OCR (seconds): {OCRTime}')
+        print(f'Time to analyze OCR data (seconds): {analysisTime}')
+        if best_data != []:
+            print(f"Time to move mouse (and potentially run inputs, in which case there's a built in .25 second delay) (seconds): {moveMouseTime}")
 
 # Define function to analyze the OCR word box data and find any words that match the goal string(s)
 def analyze_ocr(text_data, goals, any):
