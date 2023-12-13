@@ -1,6 +1,6 @@
 # Set line 25, 30, or 35 (changes depending on OS) to the path of your Tesseract executable (https://tesseract-ocr.github.io/tessdoc/Installation.html)
-# After doing so, run the program and press any key while the screenshot window is focused to advance to the next screenshot OR alternatively if not using the visualization window, press return in the terminal to advance to the next run.
-# pressing 'Q' will quit the program
+# After doing so, run the program and answer the prompts to run the program
+# 
 
 # Citations: pytesseract (the OCR library used) https://pypi.org/project/pytesseract/, which is a wrapper for Tesseract (the OCR engine used) https://tesseract-ocr.github.io/tessdoc/Installation.html; pyautogui (the library used to take screenshots and move the mouse) https://pyautogui.readthedocs.io/en/latest/; OpenCV (the library used to alter and process the images) https://docs.opencv.org/4.x/d2/d96/tutorial_py_table_of_contents_imgproc.html; PIL (the library used to convert the screenshots to images) https://pillow.readthedocs.io/en/stable/; Numpy (used to assist in image processing) https://numpy.org/doc/stable/
 
