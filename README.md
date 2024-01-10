@@ -1,0 +1,1 @@
+This is an aim cheat for the online browser game Shellshockers. It uses the Tesseract OCR artifical intelligence model to detect enemy nametags on the screen, and snap the player's cursor to the body of the enemy that had their nametag was detected.
